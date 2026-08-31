@@ -25,14 +25,14 @@
     "ignoreCommand": []
   },
   "adminBot": [
-    "61591264419890"
+    "61593801485340"
   ],
   "developer": [
-    "61591264419890"
+    "61593801485340"
   
   ],
   "vipuser": [
-    "61591264419890"
+    "61593801485340"
   ],
   "reactBy": {
     "delete": ["🗑️", "❌", "😠", "😡", "😾"],
@@ -46,7 +46,7 @@
   "nickNameBot": "Miss Queen 💟👑",
   "prefix": "(",
   "database": {
-    "type": "mongodb",
+    "type": "sqlite",
     "uriMongodb": "enter your mongodb url",
     "autoSyncWhenStart": false,
     "autoRefreshThreadInfoFirstTime": true,

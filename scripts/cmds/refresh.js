@@ -3,7 +3,7 @@ module.exports = {
 		name: "refresh",
 		version: "1.2",
 		author: "NTKhang",
-		countDown: 60,
+		countDown: 5,
 		role: 0,
 		description: {
 			vi: "làm mới thông tin nhóm chat hoặc người dùng",

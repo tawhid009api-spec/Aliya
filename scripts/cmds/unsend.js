@@ -1,7 +1,7 @@
 const { GoatWrapper } = require("fca-saim-x69x");module.exports = {
 	config: {
 		name: "unsend",
-		aliases: ["rmv", "u", "uns", "r", "remove"],
+		aliases: ["rmv", "uns", "remove"],
 		version: "1.2",
 		author: "NTKhang",
 		countDown: 5,

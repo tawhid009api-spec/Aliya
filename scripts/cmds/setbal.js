@@ -1,5 +1,3 @@
-// Banner Image: https://files.catbox.moe/ixj7u8.jpg
-
 const axios = require("axios");
 
 const makeBold = (text) => {
@@ -21,7 +19,7 @@ module.exports = {
     version: "1.0.0",
     author: "Mr.King 🎭",
     countDown: 2,
-    role: 2, // Admin/Owner Only
+    role: 2,
     category: "admin",
     guide: {
       en: "{pn} [amount] (reply) | {pn} @mention [amount] | {pn} [UID] [amount]"
@@ -30,60 +28,44 @@ module.exports = {
 
   onStart: async function ({ api, event, args, usersData }) {
     const { threadID, messageID, senderID, mentions, messageReply } = event;
-    const ADMIN_ID = "61591264419890"; // আপনার নির্দিষ্ট অ্যাডমিন আইডি
-
-    // 🔒 কঠোর সিকিউরিটি চেক
-    if (senderID !== ADMIN_ID) {
-      return api.sendMessage(makeBold("🚫 𝐘𝐨𝐮 𝐚𝐫𝐞 𝐧𝐨𝐭 𝐚𝐮𝐭𝐡𝐨𝐫𝐢𝐳𝐞𝐝 𝐭𝐨 𝐮𝐬𝐞 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝!"), threadID, messageID);
-    }
 
     let targetID = null;
     let amount = null;
 
-    // ১. রিপ্লাই মেকানিজম (Reply)
     if (messageReply) {
       targetID = messageReply.senderID;
       amount = parseInt(args[0]);
     }
-    // ২. মেনশন মেকানিজম (Mention)
     else if (Object.keys(mentions).length > 0) {
       targetID = Object.keys(mentions)[0];
-      // মেনশন বাদে বাকি অংশ থেকে অ্যামাউন্ট নেওয়া
       amount = parseInt(args.join(" ").replace(/@[^]*?(\s|$)/, "").trim());
     }
-    // ৩. ইউআইডি অথবা নিজের জন্য মেকানিজম (UID / Self)
     else if (args.length > 0) {
       if (args.length === 1) {
-        // শুধু অ্যামাউন্ট দিলে নিজের অ্যাকাউন্টে সেট হবে
         targetID = senderID;
         amount = parseInt(args[0]);
       } else if (args.length >= 2) {
-        // UID + Amount দিলে অন্যের অ্যাকাউন্টে সেট হবে
         targetID = args[0];
         amount = parseInt(args[1]);
       }
     }
 
-    // ভ্যালিডেশন চেক
     if (!targetID || isNaN(amount)) {
       return api.sendMessage(makeBold("⚠️ 𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐅𝐨𝐫𝐦𝐚𝐭!\n𝐔𝐬𝐞: /setbal [amount] (reply) | /setbal @mention [amount] | /setbal [UID] [amount]"), threadID, messageID);
     }
 
     try {
-      // ডেটাবেজে ব্যালেন্স আপডেট
       await usersData.set(targetID, { money: amount });
       const name = await usersData.getName(targetID);
 
       const successText = `✅ 𝐁𝐚𝐥𝐚𝐧𝐜𝐞 𝐒𝐞𝐭 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲!\n\n👤 𝐔𝐬𝐞𝐫: ${name}\n🆔 𝐔🇮🇩: ${targetID}\n💰 𝐍𝐞𝐰 𝐁𝐚𝐥𝐚𝐧𝐜𝐞: ${amount.toLocaleString()}৳\n\n👑 𝐒𝐲𝐬𝐭𝐞𝐦 𝐁𝐲: 𝐌𝐫.𝐊𝐢𝐧𝐠 🕊️💖`;
 
-      // ভিডিও লিস্ট (আপনার দেওয়া ২টি লিঙ্ক)
       const videoUrls = [
         "https://files.catbox.moe/st1fzf.mp4",
         "https://files.catbox.moe/gdb4xi.mp4"
       ];
       const randomVideo = videoUrls[Math.floor(Math.random() * videoUrls.length)];
 
-      // ভিডিওসহ মেসেজ পাঠানোর চেষ্টা
       try {
         const stream = await global.utils.getStreamFromURL(randomVideo);
         return api.sendMessage({
@@ -91,7 +73,6 @@ module.exports = {
           attachment: [stream]
         }, threadID, messageID);
       } catch (videoError) {
-        // ভিডিও ফেইল হলে শুধুমাত্র টেক্সট মেসেজ যাবে
         return api.sendMessage(successText, threadID, messageID);
       }
 

@@ -1,11 +1,9 @@
-// Banner Image: https://files.catbox.moe/ixj7u8.jpg
-
 module.exports = {
   config: {
     name: "balance",
     aliases: ["bal", "money"],
-    version: "1.1.0",
-    author: "Mr.King 🎭",
+    version: "1.4.0",
+    author: "Mr.King ",
     countDown: 5,
     role: 0,
     category: "economy",
@@ -26,10 +24,9 @@ module.exports = {
 
     try {
       const userData = await usersData.get(targetID);
-      const name = userData.name || "User";
+      const name = userData.name || "Pookie User";
       const rawBalance = userData.money || 0;
 
-      // K, M, B, T ফরম্যাটে কনভার্ট করার লজিক
       function formatEconomy(num) {
         if (num >= 1e12) return (num / 1e12).toFixed(1).replace(/\.0$/, "") + "T";
         if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, "") + "B";
@@ -40,16 +37,17 @@ module.exports = {
 
       const formattedBalance = formatEconomy(rawBalance);
 
-      const infoCard = 
-        `💰 𝗕𝗔𝗟𝗔𝗡𝗖𝗘 𝗜𝗡𝗙𝗢\n` +
-        `╭────────────────⬣\n` +
-        `│ 👤 𝗡𝗮𝗺𝗲 : ${name}\n` +
-        `│ 💳 𝗪𝗮𝗹𝗹𝗲𝘁 : ${formattedBalance} coins\n` +
-        `│ 📊 𝗦𝘁𝗮𝘁𝘂𝘀 : Verified User\n` +
-        `╰────────────────⬣\n` +
-        `𝐌𝐚𝐝𝐞 𝐰𝐢𝐭𝐡 🤍 𝐛𝐲 --𝔐𝔯.𝔎𝔦𝔫𝔤`;
+      const pookieCard = 
+        `🌸 ─── 🌺 𝑷𝑶𝑶𝑲𝑰𝑬 𝑾𝑨𝑳𝑳𝑬𝑻 🌺 ─── 🌸\n` +
+        `╭────────────────────────⬣\n` +
+        `│ 🌷 𝐍𝐚𝐦𝐞 : ${name}\n` +
+        `│ 🎀 ${name}'𝐬 𝐖𝐚𝐥𝐥𝐞𝐭 : ${formattedBalance} Coins 🪙\n` +
+        `│ 🧸 𝐒𝐭𝐚𝐭𝐮𝐬 : Cutest Pookie ✨\n` +
+        `╰────────────────────────⬣\n` +
+        `🌸━━━ 𝐌𝐚𝐝𝐞 𝐰𝐢𝐭𝐡 💖 𝐛𝐲 𝐌𝐫.𝐊𝐢𝐧𝐠 ━━━🌸`;
 
-      return api.sendMessage(infoCard, threadID, messageID);
+      return api.sendMessage(pookieCard, threadID, messageID);
+
     } catch (err) {
       console.error(err);
       return api.sendMessage("❌ Error fetching balance from database.", threadID, messageID);

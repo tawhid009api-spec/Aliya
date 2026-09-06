@@ -1,8 +1,8 @@
 # index.js
-Goat.newVersionDetected=🌸 𝑷𝒐𝒐𝒌𝒊𝒆! You are using version %1, but latest version %2 is available! 🌷 Please update using: %3
+Goat.newVersionDetected=🌸 𝑷𝒐𝒐𝒌𝒊𝒆! You are using version %1, latest version is %2. Please update: %3
 Goat.autoRestart1=🌸 Bot will auto restart in %1 🎀
 Goat.autoRestart2=🧸 Bot will auto restart by cron job: %1 ✨
-Goat.googleApiTokenExpired=🌷 Google API refresh token has expired, please get a new one at https://developers.google.com/oauthplayground/ ✨
+Goat.googleApiTokenExpired=🌷 Google API refresh token expired, please get a new token at https://developers.google.com/oauthplayground/ ✨
 
 # bot/login/login.js
 login.currentlyLogged=🌸 Logging in sweetie... 🧸
@@ -86,7 +86,7 @@ handlerCheckData.cantCreateUser=🥺 Cannot write user '%1' to database!
 
 # bot/handler/handlerEvents.js
 handlerEvents.userBanned=🚫 ─── 𝑩𝑨𝑵𝑵𝑬𝑫 𝑼𝑺𝑬𝑹 ─── 🌸\n╭──────────────────⬣\n│ 🥺 𝐘𝐨𝐮 𝐚𝐫𝐞 𝐛𝐚𝐧𝐧𝐞𝐝 𝐟𝐫𝐨𝐦 𝐭𝐡𝐢𝐬 𝐛𝐨𝐭\n│ 📌 𝐑𝐞𝐚𝐬𝐨𝐧: %1\n│ ⏰ 𝐓𝐢𝐦𝐞: %2\n│ 👤 𝐔𝐈𝐃: %3\n╰──────────────────⬣
-handlerEvents.threadBanned=🚫 ─── 𝑩𝑨𝑵𝑵𝑬𝑫 𝑮𝑑𝑶𝑼𝑑 ─── 🌷\n╭──────────────────⬣\n│ 🥺 𝐓𝐡𝐢𝐬 𝐠𝐫𝐨𝐮𝐩 𝐢𝐬 𝐛𝐚𝐧𝐧𝐞𝐝\n│ 📌 𝐑𝐞𝐚𝐬𝐨𝐧: %1\n│ ⏰ 𝐓𝐢𝐦𝐞: %2\n│ 🏠 𝐓𝐈𝐃: %3\n╰──────────────────⬣
+handlerEvents.threadBanned=🚫 ─── 𝑩𝑨𝑵𝑵𝑬𝑫 𝑮𝒅𝑶𝑼𝒅 ─── 🌷\n╭──────────────────⬣\n│ 🥺 𝐓𝐡𝐢𝐬 𝐠𝐫𝐨𝐮𝐩 𝐢𝐬 𝐛𝐚𝐧𝐧𝐞𝐝\n│ 📌 𝐑𝐞𝐚𝐬𝐨𝐧: %1\n│ ⏰ 𝐓𝐢𝐦𝐞: %2\n│ 🏠 𝐓𝐈𝐃: %3\n╰──────────────────⬣
 handlerEvents.onlyAdminBox=🔒 🌸 𝐓𝐡𝐢𝐬 𝐠𝐫𝐨𝐮𝐩 𝐢𝐬 𝐜𝐮𝐫𝐫𝐞𝐧𝐭𝐥𝐲 𝐥𝐨𝐜𝐤𝐞𝐝 𝐟𝐨𝐫 𝐆𝐫𝐨𝐮𝐩 𝐀𝐝𝐦𝐢𝐧𝐬 𝐨𝐧𝐥𝐲! 🎀
 handlerEvents.onlyAdminBot=👑 🌸 𝐂𝐮𝐫𝐫𝐞𝐧𝐭𝐥𝐲 𝐨𝐧𝐥𝐲 𝐁𝐨𝐭 𝐀𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐮𝐬𝐞 𝐭𝐡𝐢𝐬 𝐛𝐨𝐭! ✨
 handlerEvents.onlyDeveloperGlobal=⚙️ 🌷 𝐎𝐧𝐥𝐲 𝐁𝐨𝐭 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫𝐬 𝐜𝐚𝐧 𝐮𝐬𝐞 𝐭𝐡𝐢𝐬 𝐛𝐨𝐭! 🧸

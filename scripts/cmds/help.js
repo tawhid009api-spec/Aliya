@@ -184,7 +184,7 @@ module.exports = {
 └─ ᵁˢᵃᵍᵉ : ${usage}
 
 ⏳ Auto deleting in 2 minutes...
-╰──────────────────╯`;
+╰─────────────────────────╯`;
 
       return sendAutoDeleteMessage(api, message, infoMsg);
     }

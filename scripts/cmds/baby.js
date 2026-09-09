@@ -28,11 +28,11 @@ const fallbackMessages = [
   "ইসস! এতো ঢং করো কেন? একদম চড় খাইতে ইচ্ছে করতাছে 🤏🏻🐸"
 ];
 
-const baseApiUrl = "https://baby-1-1-x5j0.onrender.com/";
+const baseApiUrl = "https://baby-one-zeta.vercel.app/";
 
 const adminCredentials = {
   username: "Mr.king",
-  password: "lojjathakleerdekhishna"
+  password: "tanindev@#90"
 };
 
 const makeBold = (text) => {

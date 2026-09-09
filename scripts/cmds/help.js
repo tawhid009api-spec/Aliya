@@ -1,14 +1,17 @@
-const { createCanvas } = require("canvas");
+const axios = require("axios");
 const fs = require("fs-extra");
-const path = require("path");
+const path = path = require("path");
+
+const FOLDER_ID = "1U4yM0YILj0dTx1tpYxK2Vasc3SSuoADC";
+
 const { getPrefix } = global.utils;
 const { commands } = global.GoatBot;
 
 function roleText(role) {
-  if (role === 0) return "All Users";
-  if (role === 1) return "Group Admins";
-  if (role === 2) return "Bot Admin";
-  return "Unknown";
+  if (role === 0) return "Aʟʟ Usᴇʀs";
+  if (role === 1) return "Gʀᴏᴜᴘ Aᴅᴍɪɴs";
+  if (role === 2) return "Bᴏᴛ Aᴅᴍɪɴ";
+  return "Uɴᴋɴᴏᴡɴ";
 }
 
 function findCommand(name) {
@@ -22,99 +25,49 @@ function findCommand(name) {
   return null;
 }
 
-async function renderHelpImage(categories, page, totalPages, totalCmds, prefix) {
-  const width = 1200;
-  const height = 1500;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext("2d");
-
-  // Background
-  const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, "#080614");
-  gradient.addColorStop(0.5, "#0d0a26");
-  gradient.addColorStop(1, "#05030a");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
-
-  // Outer Border
-  ctx.strokeStyle = "#8b5cf6";
-  ctx.lineWidth = 6;
-  ctx.strokeRect(30, 30, width - 60, height - 60);
-
-  // Header Title
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 52px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("MISS QUEEN TERMINAL", width / 2, 110);
-
-  ctx.fillStyle = "#a855f7";
-  ctx.font = "bold 28px sans-serif";
-  ctx.fillText("✿ Command Matrix ✿", width / 2, 155);
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "22px sans-serif";
-  ctx.fillText(`Page ${page}/${totalPages}  •  ${totalCmds} commands total`, width / 2, 195);
-
-  // Divider Line
-  ctx.strokeStyle = "#334155";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(60, 220);
-  ctx.lineTo(width - 60, 220);
-  ctx.stroke();
-
-  // Columns Layout (3 Columns)
-  const colWidth = 350;
-  const startX = 65;
-  const startY = 260;
-  const colGap = 20;
-
-  const catNames = Object.keys(categories);
-  const itemsPerPage = 6; 
-  const pageCats = catNames.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
-  pageCats.forEach((cat, index) => {
-    const col = index % 3;
-    const row = Math.floor(index / 3);
-    const x = startX + col * (colWidth + colGap);
-    const y = startY + row * 550;
-
-    // Category Header
-    ctx.textAlign = "left";
-    ctx.fillStyle = "#38bdf8";
-    ctx.font = "bold 26px sans-serif";
-    ctx.fillText(`⭔ ${cat}`, x, y);
-
-    // Commands under category
-    const cmds = categories[cat].slice(0, 14); 
-    cmds.forEach((cmd, cIdx) => {
-      ctx.fillStyle = "#cbd5e1";
-      ctx.font = "20px sans-serif";
-      ctx.fillText(` ✧ ${cmd}`, x + 10, y + 35 + cIdx * 34);
+async function getRandomVideoPath() {
+  try {
+    const response = await axios.get(`https://drive.google.com/embeddedfolderview?id=${FOLDER_ID}`).catch(async () => {
+      return await axios.get(`https://docs.google.com/uc?export=list&id=${FOLDER_ID}`);
     });
-  });
 
-  // Footer Info
-  ctx.strokeStyle = "#334155";
-  ctx.beginPath();
-  ctx.moveTo(60, height - 130);
-  ctx.lineTo(width - 60, height - 130);
-  ctx.stroke();
+    const htmlData = response.data;
+    const matches = [...htmlData.matchAll(/"([^"]+)"\s*,\s*\[\s*"([^"]+)"\s*,\s*([0-9]+)\s*,\s*"([^"]+)"/g)];
+    
+    let fileId = "";
+    if (!matches || matches.length === 0) {
+      const fallbackMatches = [...htmlData.matchAll(/\/file\/d\/([a-zA-Z0-9_-]+)\/view/g)];
+      if (fallbackMatches.length === 0) return null;
+      fileId = fallbackMatches[Math.floor(Math.random() * fallbackMatches.length)][1];
+    } else {
+      const randomMatch = matches[Math.floor(Math.random() * matches.length)];
+      fileId = randomMatch[1];
+    }
 
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "22px sans-serif";
-  ctx.fillText(` Reply with a number (1-${totalPages}) to jump to that page`, width / 2, height - 85);
+    const downloadUrl = `https://docs.google.com/uc?export=download&id=${fileId}`;
+    const cacheDir = path.join(__dirname, "cache");
+    fs.ensureDirSync(cacheDir);
 
-  ctx.fillStyle = "#c084fc";
-  ctx.font = "bold 24px sans-serif";
-  ctx.fillText(`✦ MAINTAINER — Mr.King ☠️✌🏼  •  Prefix: ${prefix} ✦`, width / 2, height - 45);
+    const filePath = path.join(cacheDir, `help_video_${Date.now()}.mp4`);
+    const downloadStream = await axios({
+      url: downloadUrl,
+      method: "GET",
+      responseType: "stream"
+    });
 
-  const cachePath = path.join(__dirname, "cache", `help_${Date.now()}.png`);
-  if (!fs.existsSync(path.dirname(cachePath))) fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+    const writer = fs.createWriteStream(filePath);
+    downloadStream.data.pipe(writer);
 
-  fs.writeFileSync(cachePath, canvas.toBuffer());
-  return cachePath;
+    return new Promise((resolve) => {
+      writer.on("finish", () => resolve(filePath));
+      writer.on("error", () => {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        resolve(null);
+      });
+    });
+  } catch (err) {
+    return null;
+  }
 }
 
 function sendAutoDeleteMessage(api, message, content) {
@@ -131,11 +84,11 @@ module.exports = {
   config: {
     name: "help",
     aliases: ["menu"],
-    version: "3.2.0",
+    version: "4.1.0",
     author: "Mr.King",
     role: 0,
     category: "info",
-    shortDescription: "Show all commands in terminal banner format (Auto delete in 2 minutes)",
+    shortDescription: "Show all commands with random anime video in Pookie Style",
     guide: "{pn} | {pn} <page_number> | {pn} <command>"
   },
 
@@ -155,52 +108,74 @@ module.exports = {
     }
 
     const catNames = Object.keys(categories);
-    const totalPages = Math.ceil(catNames.length / 6) || 1;
+    const itemsPerPage = 6;
+    const totalPages = Math.ceil(catNames.length / itemsPerPage) || 1;
 
-    /* ───── Command Details View (Style 12 - Superscript Soft) ───── */
     if (input && isNaN(input)) {
       const cmd = findCommand(input);
-      if (!cmd) return sendAutoDeleteMessage(api, message, `❌ Command "${input}" not found!`);
+      if (!cmd) return sendAutoDeleteMessage(api, message, `𓍢ִ໋🌸✧ ── Cᴏᴍᴍᴀɴᴅ "${input}" ɴᴏᴛ ғᴏᴜɴᴅ! ── ✧🌸𓍢ִ໋`);
 
       const c = cmd.config;
-      const aliasText = Array.isArray(c.aliases) ? c.aliases.join(", ") : c.aliases || "None";
+      const aliasText = Array.isArray(c.aliases) ? c.aliases.join(", ") : c.aliases || "Nᴏɴᴇ";
       
-      let usage = c.guide?.en || c.guide || "No usage provided";
+      let usage = c.guide?.en || c.guide || "Nᴏ ᴜsᴀɢᴇ ᴘʀᴏᴠɪᴅᴇᴅ";
       if (typeof usage === "string") {
         usage = usage.replace(/{pn}/g, `${prefix}${c.name}`);
       }
 
       const infoMsg = 
-`╭───『 COMMAND DETAILS 』─╮
-│
-├─ ᴺᵃᵐᵉ : ${c.name}
-├─ ᶜᵃᵗᵉᵍᵒʳʸ : ${(c.category || "UNCATEGORIZED").toUpperCase()}
-├─ ᴰᵉˢᶜʳⁱᵖᵗⁱᵒⁿ : ${c.shortDescription || "N/A"}
-├─ ᴬˡⁱᵃˢᵉˢ : ${aliasText}
-├─ ᵛᵉʳˢⁱᵒⁿ : ${c.version || "1.0"}
-├─ ᴾᵉʳᵐⁱˢˢⁱᵒⁿ : ${roleText(c.role)}
-├─ ᶜᵒᵒˡᵈᵒʷⁿ : ${c.countDown || 5}s
-├─ ᴬᵘᵗʰᵒʳ : ${c.author || "Unknown"}
-└─ ᵁˢᵃᵍᵉ : ${usage}
+`𓍢ִ໋🌸✧ ── ͟͟͞͞Cᴏᴍᴍᴀɴᴅ Dᴇᴛᴀɪʟs ── ✧🌸𓍢ִ໋🌷͙֒ ᥫ᭡—͞  
 
-⏳ Auto deleting in 2 minutes...
-╰─────────────────────────╯`;
+ᥫ᭡ Nᴀᴍᴇ : ${c.name}
+ᥫ᭡ Cᴀᴛᴇɢᴏʀʏ : ${(c.category || "UNCATEGORIZED").toUpperCase()}
+ᥫ᭡ Dᴇsᴄʀɪᴘᴛɪᴏɴ : ${c.shortDescription || "N/A"}
+ᥫ᭡ Aʟɪᴀsᴇs : ${aliasText}
+ᥫ᭡ Vᴇʀsɪᴏɴ : ${c.version || "1.0"}
+ᥫ᭡ Pᴇʀᴍɪssɪᴏɴ : ${roleText(c.role)}
+ᥫ᭡ Cᴏᴏʟᴅᴏᴡɴ : ${c.countDown || 5}s
+ᥫ᭡ Aᴜᴛʜᴏʀ : ${c.author || "Uɴᴋɴᴏᴡɴ"}
+ᥫ᭡ Usᴀɢᴇ : ${usage}
+
+𓍢ִ໋🌷 Aᴜᴛᴏ ᴅᴇʟᴇᴛɪɴɢ ɪɴ 2 ᴍɪɴᴜᴛᴇs... ✨`;
 
       return sendAutoDeleteMessage(api, message, infoMsg);
     }
 
-    /* ───── Pagination Image View ───── */
     let page = parseInt(input) || 1;
     if (page < 1 || page > totalPages) page = 1;
 
-    const imgPath = await renderHelpImage(categories, page, totalPages, totalCmds, prefix);
+    const pageCats = catNames.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-    return message.reply({
-      attachment: fs.createReadStream(imgPath)
-    }, (err, info) => {
-      if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+    let helpText = `𓍢ִ໋🌸✧ ── ͟͟͞͞Cᴏᴍᴍᴀɴᴅ Mᴇɴᴜ ── ✧🌸𓍢ִ໋🌷͙֒ ᥫ᭡—͞  \n\n`;
+    helpText += `🌸 Pᴀɢᴇ : ${page}/${totalPages} ✧ Tᴏᴛᴀʟ : ${totalCmds} Cᴍᴅs\n`;
+    helpText += `🌸 Pʀᴇғɪx : ${prefix}\n\n`;
+
+    pageCats.forEach((cat) => {
+      helpText += `𓍢ִ໋🌷͙֒ ✨ ── ${cat} ── ✨\n`;
+      const cmds = categories[cat];
+      helpText += `ᥫ᭡ ${cmds.join(" • ")}\n\n`;
+    });
+
+    helpText += `𓍢ִ໋🌸✧ Rᴇᴘʟʏ ᴘᴀɢᴇ ɴᴜᴍʙᴇʀ (1-${totalPages}) ᴛᴏ sᴡɪᴛᴄʜ ᴘᴀɢᴇ\n`;
+    helpText += `𓍢ִ໋🌷 Mᴀɪɴᴛᴀɪɴᴇʀ : Mʀ.Kɪɴɢ ☠️✌🏼`;
+
+    api.setMessageReaction("⏳", event.messageID, () => {}, true);
+
+    const videoPath = await getRandomVideoPath();
+    const msgData = { body: helpText };
+
+    if (videoPath && fs.existsSync(videoPath)) {
+      msgData.attachment = fs.createReadStream(videoPath);
+    }
+
+    return message.reply(msgData, (err, info) => {
+      if (videoPath && fs.existsSync(videoPath)) {
+        fs.unlinkSync(videoPath);
+      }
 
       if (!err && info) {
+        api.setMessageReaction("🔥", event.messageID, () => {}, true);
+
         global.GoatBot.onReply.set(info.messageID, {
           commandName: "help",
           messageID: info.messageID,
@@ -211,6 +186,8 @@ module.exports = {
         setTimeout(() => {
           if (api.unsendMessage) api.unsendMessage(info.messageID);
         }, 120000);
+      } else {
+        api.setMessageReaction("📌", event.messageID, () => {}, true);
       }
     });
   },
@@ -233,15 +210,42 @@ module.exports = {
       totalCmds++;
     }
 
-    const imgPath = await renderHelpImage(categories, page, Reply.totalPages, totalCmds, prefix);
+    const catNames = Object.keys(categories);
+    const itemsPerPage = 6;
+    const pageCats = catNames.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-    return message.reply({
-      attachment: fs.createReadStream(imgPath)
-    }, (err, info) => {
-      if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+    let helpText = `𓍢ִ໋🌸✧ ── ͟͟͞͞Cᴏᴍᴍᴀɴᴅ Mᴇɴᴜ ── ✧🌸𓍢ִ໋🌷͙֒ ᥫ᭡—͞  \n\n`;
+    helpText += `🌸 Pᴀɢᴇ : ${page}/${Reply.totalPages} ✧ Tᴏᴛᴀʟ : ${totalCmds} Cᴍᴅs\n`;
+    helpText += `🌸 Pʀᴇғɪx : ${prefix}\n\n`;
+
+    pageCats.forEach((cat) => {
+      helpText += `𓍢ִ໋🌷͙֒ ✨ ── ${cat} ── ✨\n`;
+      const cmds = categories[cat];
+      helpText += `ᥫ᭡ ${cmds.join(" • ")}\n\n`;
+    });
+
+    helpText += `𓍢ִ໋🌸✧ Rᴇᴘʟʏ ᴘᴀɢᴇ ɴᴜᴍʙᴇʀ (1-${Reply.totalPages}) ᴛᴏ sᴡɪᴛᴄʜ ᴘᴀɢᴇ\n`;
+    helpText += `𓍢ִ໋🌷 Mᴀɪɴᴛᴀɪɴᴇʀ : Mʀ.Kɪɴɢ ☠️✌🏼`;
+
+    api.setMessageReaction("⏳", event.messageID, () => {}, true);
+
+    const videoPath = await getRandomVideoPath();
+    const msgData = { body: helpText };
+
+    if (videoPath && fs.existsSync(videoPath)) {
+      msgData.attachment = fs.createReadStream(videoPath);
+    }
+
+    return message.reply(msgData, (err, info) => {
+      if (videoPath && fs.existsSync(videoPath)) {
+        fs.unlinkSync(videoPath);
+      }
+
       if (api.unsendMessage) api.unsendMessage(Reply.messageID);
 
       if (!err && info) {
+        api.setMessageReaction("🔥", event.messageID, () => {}, true);
+
         global.GoatBot.onReply.set(info.messageID, {
           commandName: "help",
           messageID: info.messageID,

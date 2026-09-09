@@ -1,6 +1,6 @@
 const axios = require("axios");
 const fs = require("fs-extra");
-const path = path = require("path");
+const path = require("path");
 
 const FOLDER_ID = "1U4yM0YILj0dTx1tpYxK2Vasc3SSuoADC";
 

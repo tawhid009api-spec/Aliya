@@ -1,20 +1,35 @@
- module.exports = {
-  config: {
-    name: "offbot",
-    version: "1.0",
-    author: "Mr.King",
-    countDown: 45,
-    role: 0,
-    shortDescription: "Turn off bot",
-    longDescription: "Turn off bot",
-    category: "admin",
-    guide: "{p}{n}"
-  },
-  onStart: async function ({event, api}) {
-    const permission = [ "61591264419890" ];
-  if (!permission.includes(event.senderID)) {
-    api.sendMessage("╔════ஜ۩۞۩ஜ═══╗\nYou don't have permission to use this command.\n═══ஜ۩۞۩ஜ═══╝", event.threadID, event.messageID);
-    return;
-  }
-    api.sendMessage("╔════ஜ۩۞۩ஜ════╗\n✅ Successfully Turned Off\n╚════ஜ۩۞۩ஜ════╝",event.threadID, () =>process.exit(0))}
+module.exports = {
+	config: {
+		name: "offbot",
+		version: "2.0.0",
+		author: "Mr.king",
+		role: 2,
+		countDown: 5,
+		category: "system",
+		shortDescription: "Shutdown the bot",
+		longDescription: "Stylish bot shutdown command.",
+		guide: "{pn}"
+	},
+
+	onStart: async function ({ api, event }) {
+		const threadID = event.threadID;
+
+		await api.sendMessage(
+	 `╭━━━〔 𝐁𝐎𝐓 𝐎𝐅𝐅 〕━━━╮
+┃
+┃  💤 𝐆𝐨𝐨𝐝𝐛𝐲𝐞,🏯🎀...
+┃
+┃  💫 𝐒𝐲𝐬𝐭𝐞𝐦 𝐒𝐡𝐮𝐭𝐭𝐢𝐧𝐠 𝐃𝐨𝐰𝐧
+┃  👀 𝐀𝐮𝐭𝐡𝐨𝐫 : 𝐌𝐫.𝐤𝐢𝐧𝐠
+┃
+╰━━━━━━━━━━━━━━━━━━╯
+
+⏳ 𝐁𝐨𝐭 𝐢𝐬 𝐠𝐨𝐢𝐧𝐠 𝐨𝐟𝐟𝐥𝐢𝐧𝐞... 🖤`,
+			threadID
+		);
+
+		setTimeout(() => {
+			process.exit(0);
+		}, 1500);
+	}
 };

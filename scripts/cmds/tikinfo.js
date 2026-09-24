@@ -103,7 +103,7 @@ module.exports = {
     aliases: ["tiktokinfo", "tinfo"],
     version: "1.1.1",
     author: "Mr.King",
-    role: 0,
+    role: 1,
     category: "info",
     shortDescription: "Fetch TikTok video analytical information",
     guide: "{pn} <tiktok_url> OR Send TikTok link directly"

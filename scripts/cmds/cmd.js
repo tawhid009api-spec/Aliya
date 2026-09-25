@@ -26,16 +26,16 @@ function isURL(str) {
 module.exports = {
 	config: {
 		name: "cmd",
-		version: "3.0.0",
-		author: "NTKhang | Upgraded",
+		version: "3.1.0",
+		author: "NTKhang | Mr.king",
 		countDown: 2,
 		role: 4,
 		description: {
-			en: "Auto Package Installer & Command Manager with Live Reaction"
+			en: "Auto Package Installer, Command Manager & Unloader with Live Reaction"
 		},
 		category: "owner",
 		guide: {
-			en: "   {pn} install <url> <file.js>\n   {pn} install <file.js> <code>\n   {pn} load <file.js>\n   {pn} loadAll"
+			en: "   {pn} install <url> <file.js>\n   {pn} install <file.js> <code>\n   {pn} load <file.js>\n   {pn} unload <file.js>\n   {pn} loadAll"
 		}
 	},
 
@@ -44,6 +44,9 @@ module.exports = {
 			missingFileName: "❌ | Command file name lacks .js extension or missing.",
 			loaded: "✅ | Command \"%1\" loaded successfully!",
 			loadedError: "❌ | Failed to load command \"%1\"\n%2: %3",
+			missingCommandNameUnload: "⚠️ | Please enter the file name of the command you want to unload.",
+			unloaded: "🗑️ | Unloaded command \"%1\" successfully!",
+			unloadedError: "❌ | Failed to unload command \"%1\"\n%2: %3",
 			missingUrlCodeOrFileName: "⚠️ | Syntax: {pn} install <url/code> <filename.js>",
 			invalidUrl: "⚠️ | Invalid URL provided.",
 			invalidUrlOrCode: "⚠️ | Failed to extract valid code from source.",
@@ -54,9 +57,9 @@ module.exports = {
 	},
 
 	onStart: async ({ args, message, api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, event, commandName, getLang }) => {
-		const { unloadScripts } = global.utils;
 		const action = (args[0] || "").toLowerCase();
 
+		// —──────────────── LOAD COMMAND —──────────────── //
 		if (action === "load" && args.length === 2) {
 			if (!args[1]) return message.reply(getLang("missingFileName"));
 			const infoLoad = await loadScripts("cmds", args[1], log, configCommands, api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, getLang, null, api, event.messageID);
@@ -64,6 +67,23 @@ module.exports = {
 			return message.reply(getLang("loadedError", infoLoad.name, infoLoad.error.name, infoLoad.error.message));
 		}
 
+		// —──────────────── UNLOAD COMMAND —──────────────── //
+		else if (action === "unload") {
+			if (!args[1]) return message.reply(getLang("missingCommandNameUnload"));
+			let fileName = args[1];
+			if (fileName.endsWith(".js")) fileName = fileName.slice(0, -3);
+
+			try {
+				const infoUnload = unloadScripts("cmds", fileName, configCommands, getLang);
+				api.setMessageReaction("🗑️", event.messageID, () => {}, true);
+				return message.reply(getLang("unloaded", infoUnload.name));
+			} catch (err) {
+				api.setMessageReaction("❌", event.messageID, () => {}, true);
+				return message.reply(getLang("unloadedError", fileName, err.name || "Error", err.message || err));
+			}
+		}
+
+		// —──────────────── INSTALL COMMAND —──────────────── //
 		else if (action === "install") {
 			let url = args[1];
 			let fileName = args[2];
@@ -146,7 +166,6 @@ module.exports = {
 			} else {
 				const infoLoad = await loadScripts("cmds", fileName, log, configCommands, api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, getLang, rawCode, api, event.messageID);
 				if (infoLoad.status === "success") {
-					// Set Success Reaction ☃️
 					api.setMessageReaction("☃️", event.messageID, () => {}, true);
 					return message.reply(getLang("installed", infoLoad.name, `/scripts/cmds/${fileName}`));
 				} else {
@@ -176,6 +195,7 @@ module.exports = {
 	}
 };
 
+// —──────────────── LOAD SCRIPT FUNCTION —──────────────── //
 async function loadScripts(folder, fileName, log, configCommands, api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, getLang, rawCode, fcaApi, targetMessageID) {
 	try {
 		if (rawCode) {
@@ -205,7 +225,6 @@ async function loadScripts(folder, fileName, log, configCommands, api, threadMod
 				try {
 					execSync(`npm install ${packageName} --save`, { stdio: "pipe" });
 				} catch (err) {
-					// Fallback for Sharp WASM if Sharp package fails on Android/Termux
 					if (packageName === "sharp") {
 						execSync(`npm install sharp @img/sharp-wasm32 --save`, { stdio: "pipe" });
 					}
@@ -226,6 +245,14 @@ async function loadScripts(folder, fileName, log, configCommands, api, threadMod
 		const { GoatBot } = global;
 
 		GoatBot.commands.set(scriptName, command);
+
+		// Remove from commandUnload array if exists
+		const keyUnloadCommand = folder === "cmds" ? "commandUnload" : "commandEventUnload";
+		if (configCommands[keyUnloadCommand]) {
+			const findIndex = configCommands[keyUnloadCommand].indexOf(`${fileName}.js`);
+			if (findIndex !== -1) configCommands[keyUnloadCommand].splice(findIndex, 1);
+		}
+
 		fs.writeFileSync(global.client.dirConfigCommands, JSON.stringify(configCommands, null, 2));
 
 		return { status: "success", name: fileName, command };
@@ -237,5 +264,54 @@ async function loadScripts(folder, fileName, log, configCommands, api, threadMod
 			error: err
 		};
 	}
+}
+
+// —──────────────── UNLOAD SCRIPT FUNCTION —──────────────── //
+function unloadScripts(folder, fileName, configCommands, getLang) {
+	const pathCommand = path.normalize(`${process.cwd()}/scripts/${folder}/${fileName}.js`);
+	
+	if (!fs.existsSync(pathCommand)) {
+		const err = new Error(`Command file "${fileName}.js" does not exist!`);
+		err.name = "FileNotFound";
+		throw err;
+	}
+
+	const { GoatBot } = global;
+	const command = GoatBot.commands.get(fileName);
+	const commandName = command?.config?.name || fileName;
+
+	// Remove aliases from memory
+	if (command?.config?.aliases) {
+		let aliases = Array.isArray(command.config.aliases) ? command.config.aliases : [command.config.aliases];
+		for (const alias of aliases) {
+			GoatBot.aliases.delete(alias);
+		}
+	}
+
+	// Remove handlers
+	const cleanArray = (arr) => {
+		const index = arr.findIndex(item => (typeof item === 'string' ? item : item.commandName) === commandName);
+		if (index !== -1) arr.splice(index, 1);
+	};
+
+	cleanArray(GoatBot.onChat || []);
+	cleanArray(GoatBot.onEvent || []);
+	cleanArray(GoatBot.onAnyEvent || []);
+	cleanArray(GoatBot.onFirstChat || []);
+
+	// Clear memory cache & maps
+	delete require.cache[require.resolve(pathCommand)];
+	GoatBot.commands.delete(commandName);
+
+	// Append to commandUnload in configCommands.json
+	const keyUnloadCommand = folder === "cmds" ? "commandUnload" : "commandEventUnload";
+	if (!configCommands[keyUnloadCommand]) configCommands[keyUnloadCommand] = [];
+	
+	if (!configCommands[keyUnloadCommand].includes(`${fileName}.js`)) {
+		configCommands[keyUnloadCommand].push(`${fileName}.js`);
+		fs.writeFileSync(global.client.dirConfigCommands, JSON.stringify(configCommands, null, 2));
+	}
+
+	return { status: "success", name: commandName };
 }
 
